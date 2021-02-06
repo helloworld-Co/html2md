@@ -44,29 +44,33 @@ app.all('/getUrlHtml', function (req, res, next) {
       const getBySelector = selector => getDom(content, selector)
 
       // 掘金
-      if (qUrl.includes('juejin')) {
+      if (qUrl.includes('juejin.cn')) {
         const htmlContent = getBySelector('.markdown-body')
-        htmlContent.querySelector('style').remove()
-        htmlContent.querySelectorAll('.copy-code-btn').forEach((v) => { v.remove() })
+        const extraDom = htmlContent.querySelector('style')
+        const extraDomArr = htmlContent.querySelectorAll('.copy-code-btn')
+        extraDom && extraDom.remove()
+        extraDomArr.length > 0 && extraDomArr.forEach((v) => { v.remove() })
         return htmlContent.innerHTML
       }
       // oschina
-      if (qUrl.includes('oschina')) {
+      if (qUrl.includes('oschina.net')) {
         const htmlContent = getBySelector('.article-detail')
-        htmlContent.querySelector('.ad-wrap').remove()
+        const extraDom = htmlContent.querySelector('.ad-wrap')
+        extraDom && extraDom.remove()
         return htmlContent.innerHTML
       }
       // cnblogs
-      if (qUrl.includes('cnblogs')) {
+      if (qUrl.includes('cnblogs.com')) {
         const htmlContent = getBySelector('#cnblogs_post_body')
         return htmlContent.innerHTML
       }
       // weixin
-      if (qUrl.includes('weixin')) {
+      if (qUrl.includes('weixin.qq.com')) {
         const htmlContent = getBySelector('#js_content')
         return htmlContent.innerHTML
       }
 
+      // 优先适配 article 标签，没有再用 body 标签
       const htmlArticle = getBySelector('article')
       if (htmlArticle) { return htmlArticle.innerHTML }
 
@@ -94,7 +98,10 @@ app.all('/getUrlHtml', function (req, res, next) {
       res.status(200).send(json)
     })
   } catch (error) {
-
+    res.status(200).send({
+      code: 0,
+      msg: '程序异常了~'
+    })
   }
 })
 
