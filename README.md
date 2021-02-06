@@ -50,6 +50,7 @@ yarn dev
 
 ## 技术交流群 / 官方公众号
 微信号 **daitukeji**
+<br/>
 <img src="./wx-group.png" width = "200" alt="官方微信群" />
 <img src="./wx.png" width = "200" alt="官方公众号" />
 
