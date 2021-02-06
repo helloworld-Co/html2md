@@ -84,6 +84,5 @@ dist
 sw.*
 
 *.tar.gz
-*.json
 
 .vscode

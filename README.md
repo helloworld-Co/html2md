@@ -1,10 +1,14 @@
-<h1 align="center">🎉 Hello-Html2md</h1>
+<h1 align="center">🎉 Html2md 🥳</h1>
 
 <div >
 
-[helloworld社区](https://www.helloworld.net) 开发的轻量强大的html一键转md工具💪🏻，纯前端开发，不需要后端接口（<small> Node是我们前端的</small>😗！），支持多平台，一键将文章链接转换为md，方便大家收藏和保存好文章（最关键的功能大家都懂的🤪）。
+`html2md` 是由 [helloworld开发者社区](https://www.helloworld.net) 开源的一款轻量级功能强大的html转md工具💪🏻，纯前端开发，不需要后端接口（<small> Node是我们前端的</small>😗！），支持多平台，一键将文章链接转换为md，方便大家收藏和保存文章🤪。请勿做其它用途
 
-[预览地址](https://www.helloworld.net/html2md) 👈🏻
+[html2md地址](https://www.helloworld.net/html2md) 👈🏻
+
+### 教程，如下图
+![html2md教程](./demo.png)
+
 
 </div>
 <br />
@@ -22,29 +26,30 @@
 - [sass](https://www.sass.hk/) 强大的 Css 预处理器之一
 ## 使用
 
-### 下载
+### 第一步：下载
 ```bash
 git clone git@github.com:helloworld-Co/html2md.git
 cd ./html2md
 ```
-### 安装
+### 第二步：安装
 ```bash
 npm install
-or
+或者
 yarn install
 ```
-### 启动
+### 第三步：启动
 ```bash
 npm run dev
-or
+或者
 yarn dev
 ```
 
 ## 使用备注
-- **防盗链**：由于各大网站的图片基本都会有防盗链机制，转换出来的 md 里的图片会无法正常预览，这个不慌 😳，把 md 内容复制到 [helloworld社区](https://www.helloworld.net) 的写作文本框中就能正常显示了👌🏻。
+- **防盗链**：由于各大网站的图片基本都会有防盗链机制，转换出来的 md 里的图片会无法正常预览，这个不慌 😳，把 md 内容复制到 [helloworld开发者社区](https://www.helloworld.net) 的写作文本框中就能正常显示了👌🏻。
 - **微信文章**：微信文章内容格式差异性比较大，不能保证 💯% 好使，如果一篇不能解决，那就换下一篇吧😏。
 
 ## 技术交流群 / 官方公众号
+微信号 **daitukeji**
 <img src="./wx-group.png" width = "200" alt="官方微信群" />
 <img src="./wx.png" width = "200" alt="官方公众号" />
 

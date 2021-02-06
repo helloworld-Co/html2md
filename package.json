@@ -1,0 +1,45 @@
+{
+  "name": "hello-html2md",
+  "version": "1.0.0",
+  "description": "轻量强大的html一键转md工具,支持多平台一键转换",
+  "author": "洪少利",
+  "private": true,
+  "scripts": {
+    "dev": "cross-env ENV=dev node server --watch server",
+    "build": "cross-env ACTION=build node server",
+    "start": "node server",
+    "lint": "eslint --fix --ext .js,.vue --ignore-path .gitignore ."
+  },
+  "lint-staged": {
+    "*.{js,vue}": "eslint"
+  },
+  "dependencies": {
+    "copy-to-clipboard": "^3.3.1",
+    "cross-env": "^7.0.3",
+    "element-ui": "^2.13.0",
+    "jsdom": "^16.4.0",
+    "mavon-editor": "^2.9.1",
+    "nuxt": "2.14.12",
+    "request": "^2.88.2",
+    "turndown": "^7.0.0",
+    "turndown-plugin-gfm": "^1.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "7.9.0",
+    "@babel/plugin-proposal-optional-chaining": "^7.12.1",
+    "@nuxtjs/axios": "^5.9.7",
+    "@nuxtjs/component-cache": "^1.1.5",
+    "@nuxtjs/eslint-config": "^1.0.1",
+    "@nuxtjs/eslint-module": "^1.0.0",
+    "babel-eslint": "^10.0.1",
+    "babel-plugin-component": "^1.1.1",
+    "eslint": "^6.1.0",
+    "eslint-plugin-html": "^6.0.0",
+    "eslint-plugin-nuxt": ">=0.4.2",
+    "eslint-plugin-vue": "^5.2.3",
+    "husky": "^4.2.3",
+    "node-sass": "^4.14.1",
+    "sass-loader": "^7.3.1",
+    "vuepress": "^1.5.2"
+  }
+}
