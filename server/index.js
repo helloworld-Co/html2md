@@ -36,8 +36,13 @@ app.all('/getUrlHtml', function (req, res, next) {
       const imgs = copyDom.querySelectorAll('img')
       const links = copyDom.querySelectorAll('a')
       imgs.length > 0 && imgs.forEach((v) => {
-        // data-original-src 是简书的懒加载路径
-        const src = v.src || v.getAttribute('data-original-src') || ''
+        /**
+         * 处理懒加载路径
+         * 简书：data-original-src
+         * 掘金：data-src
+         * segmentfault：data-src
+         */
+        const src = v.src || v.getAttribute('data-src') || v.getAttribute('data-original-src') || ''
         v.src = getAbsoluteUrl(src)
       })
       links.length > 0 && links.forEach((v) => {
