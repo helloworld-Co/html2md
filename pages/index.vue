@@ -94,7 +94,6 @@ export default {
       this.$axios.get(`${window.location.origin}/getUrlHtml`, { params: { url: this.url } })
         .then((res) => {
           this.html = res.html
-          this.html = this.html.replace(/data-original-src/gi, 'src')
           this.title = res.title
           this.isLoading = false
         }).catch(() => {

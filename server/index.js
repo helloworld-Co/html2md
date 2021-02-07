@@ -24,6 +24,28 @@ app.use(express.static(path.join(__dirname, 'static')))
 app.all('/getUrlHtml', function (req, res, next) {
   try {
     const qUrl = req.query.url || ''
+    const qOrigin = new URL(qUrl).origin || ''
+
+    // 获取图片、链接的绝对路径
+    const getAbsoluteUrl = p => new URL(p, qOrigin).href
+
+    // 转换图片、链接的相对路径
+    const changeRelativeUrl = (dom) => {
+      if (!dom) { return '<div>内容出错~</div>' }
+      const copyDom = dom
+      const imgs = copyDom.querySelectorAll('img')
+      const links = copyDom.querySelectorAll('a')
+      imgs.length > 0 && imgs.forEach((v) => {
+        // data-original-src 是简书的懒加载路径
+        const src = v.src || v.getAttribute('data-original-src') || ''
+        v.src = getAbsoluteUrl(src)
+      })
+      links.length > 0 && links.forEach((v) => {
+        const href = v.href || qUrl
+        v.href = getAbsoluteUrl(href)
+      })
+      return copyDom
+    }
 
     // 获取准确的文章内容
     const getDom = (html, selector) => {
@@ -50,32 +72,32 @@ app.all('/getUrlHtml', function (req, res, next) {
         const extraDomArr = htmlContent.querySelectorAll('.copy-code-btn')
         extraDom && extraDom.remove()
         extraDomArr.length > 0 && extraDomArr.forEach((v) => { v.remove() })
-        return htmlContent.innerHTML
+        return changeRelativeUrl(htmlContent).innerHTML
       }
       // oschina
       if (qUrl.includes('oschina.net')) {
         const htmlContent = getBySelector('.article-detail')
         const extraDom = htmlContent.querySelector('.ad-wrap')
         extraDom && extraDom.remove()
-        return htmlContent.innerHTML
+        return changeRelativeUrl(htmlContent).innerHTML
       }
       // cnblogs
       if (qUrl.includes('cnblogs.com')) {
         const htmlContent = getBySelector('#cnblogs_post_body')
-        return htmlContent.innerHTML
+        return changeRelativeUrl(htmlContent).innerHTML
       }
       // weixin
       if (qUrl.includes('weixin.qq.com')) {
         const htmlContent = getBySelector('#js_content')
-        return htmlContent.innerHTML
+        return changeRelativeUrl(htmlContent).innerHTML
       }
 
       // 优先适配 article 标签，没有再用 body 标签
       const htmlArticle = getBySelector('article')
-      if (htmlArticle) { return htmlArticle.innerHTML }
+      if (htmlArticle) { return changeRelativeUrl(htmlArticle).innerHTML }
 
       const htmlBody = getBySelector('body')
-      if (htmlBody) { return htmlBody.innerHTML }
+      if (htmlBody) { return changeRelativeUrl(htmlBody).innerHTML }
 
       return content
     }
