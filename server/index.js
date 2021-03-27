@@ -20,97 +20,108 @@ Object.assign(config, {
 // 设置应用静态目录
 app.use(express.static(path.join(__dirname, 'static')))
 
-// 通过文章地址获取文章 html内容
-app.all('/getUrlHtml', function (req, res, next) {
-  try {
-    const qUrl = req.query.url || ''
-    const qOrigin = new URL(qUrl).origin || ''
-
+const html2md = {
+  dom: '',
+  qUrl: '',
+  getAbsoluteUrl (p) {
     // 获取图片、链接的绝对路径
-    const getAbsoluteUrl = p => new URL(p, qOrigin).href
-
+    const qOrigin = new URL(this.qUrl).origin || ''
+    return new URL(p, qOrigin).href
+  },
+  changeRelativeUrl (dom) {
     // 转换图片、链接的相对路径
-    const changeRelativeUrl = (dom) => {
-      if (!dom) { return '<div>内容出错~</div>' }
-      const copyDom = dom
-      const imgs = copyDom.querySelectorAll('img')
-      const links = copyDom.querySelectorAll('a')
-      imgs.length > 0 && imgs.forEach((v) => {
-        /**
+    if (!dom) { return '<div>内容出错~</div>' }
+    const copyDom = dom
+    const imgs = copyDom.querySelectorAll('img')
+    const links = copyDom.querySelectorAll('a')
+    imgs.length > 0 && imgs.forEach((v) => {
+      /**
          * 处理懒加载路径
          * 简书：data-original-src
          * 掘金：data-src
          * segmentfault：data-src
          */
-        const src = v.src || v.getAttribute('data-src') || v.getAttribute('data-original-src') || ''
-        v.src = getAbsoluteUrl(src)
-      })
-      links.length > 0 && links.forEach((v) => {
-        const href = v.href || qUrl
-        v.href = getAbsoluteUrl(href)
-      })
-      return copyDom
-    }
+      const src = v.src || v.getAttribute('data-src') || v.getAttribute('data-original-src') || ''
+      v.src = this.getAbsoluteUrl(src)
+    })
+    links.length > 0 && links.forEach((v) => {
+      const href = v.href || this.qUrl
+      v.href = this.getAbsoluteUrl(href)
+    })
 
+    this.dom = copyDom
+    return this
+  },
+  addOriginText () {
+    // 底部添加转载来源声明
+    const html = this.dom.innerHTML
+    const resHtml = html + `<br/><div>本文转自 <a href="${this.qUrl}" target="_blank">${this.qUrl}</a>，如有侵权，请联系删除。</div>`
+    return resHtml
+  },
+  getDom (html, selector) {
     // 获取准确的文章内容
-    const getDom = (html, selector) => {
-      const dom = new JSDOM(html)
-      const htmlContent = dom.window.document.querySelector(selector)
-      return htmlContent
-    }
-
+    const dom = new JSDOM(html)
+    const htmlContent = dom.window.document.querySelector(selector)
+    return htmlContent
+  },
+  getTitle (content) {
     // 获取文章的 title
-    const getTitle = (content) => {
-      const title = getDom(content, 'title')
-      if (title) { return title.textContent }
-      return '获取标题失败~'
-    }
-
+    const title = this.getDom(content, 'title')
+    if (title) { return title.textContent }
+    return '获取标题失败~'
+  },
+  getBody (content) {
     // 获取不同平台的文章内容
-    const getBody = (content) => {
-      const getBySelector = selector => getDom(content, selector)
+    const getBySelector = selector => this.getDom(content, selector)
 
-      // 掘金
-      if (qUrl.includes('juejin.cn')) {
-        const htmlContent = getBySelector('.markdown-body')
-        const extraDom = htmlContent.querySelector('style')
-        const extraDomArr = htmlContent.querySelectorAll('.copy-code-btn')
-        extraDom && extraDom.remove()
-        extraDomArr.length > 0 && extraDomArr.forEach((v) => { v.remove() })
-        return changeRelativeUrl(htmlContent).innerHTML
-      }
-      // oschina
-      if (qUrl.includes('oschina.net')) {
-        const htmlContent = getBySelector('.article-detail')
-        const extraDom = htmlContent.querySelector('.ad-wrap')
-        extraDom && extraDom.remove()
-        return changeRelativeUrl(htmlContent).innerHTML
-      }
-      // cnblogs
-      if (qUrl.includes('cnblogs.com')) {
-        const htmlContent = getBySelector('#cnblogs_post_body')
-        return changeRelativeUrl(htmlContent).innerHTML
-      }
-      // weixin
-      if (qUrl.includes('weixin.qq.com')) {
-        const htmlContent = getBySelector('#js_content')
-        return changeRelativeUrl(htmlContent).innerHTML
-      }
-
-      // 优先适配 article 标签，没有再用 body 标签
-      const htmlArticle = getBySelector('article')
-      if (htmlArticle) { return changeRelativeUrl(htmlArticle).innerHTML }
-
-      const htmlBody = getBySelector('body')
-      if (htmlBody) { return changeRelativeUrl(htmlBody).innerHTML }
-
-      return content
+    // 掘金
+    if (this.qUrl.includes('juejin.cn')) {
+      const htmlContent = getBySelector('.markdown-body')
+      const extraDom = htmlContent.querySelector('style')
+      const extraDomArr = htmlContent.querySelectorAll('.copy-code-btn')
+      extraDom && extraDom.remove()
+      extraDomArr.length > 0 && extraDomArr.forEach((v) => { v.remove() })
+      return this.changeRelativeUrl(htmlContent).addOriginText()
     }
+    // oschina
+    if (this.qUrl.includes('oschina.net')) {
+      const htmlContent = getBySelector('.article-detail')
+      const extraDom = htmlContent.querySelector('.ad-wrap')
+      extraDom && extraDom.remove()
+      return this.changeRelativeUrl(htmlContent).addOriginText()
+    }
+    // cnblogs
+    if (this.qUrl.includes('cnblogs.com')) {
+      const htmlContent = getBySelector('#cnblogs_post_body')
+      return this.changeRelativeUrl(htmlContent).addOriginText()
+    }
+    // weixin
+    if (this.qUrl.includes('weixin.qq.com')) {
+      const htmlContent = getBySelector('#js_content')
+      return this.changeRelativeUrl(htmlContent).addOriginText()
+    }
+
+    // 优先适配 article 标签，没有再用 body 标签
+    const htmlArticle = getBySelector('article')
+    if (htmlArticle) { return this.changeRelativeUrl(htmlArticle).addOriginText() }
+
+    const htmlBody = getBySelector('body')
+    if (htmlBody) { return this.changeRelativeUrl(htmlBody).addOriginText() }
+
+    return content
+  }
+}
+
+// 通过文章地址获取文章 html内容
+app.all('/getUrlHtml', function (req, res, next) {
+  try {
+    const qUrl = req.query.url || ''
+    html2md.qUrl = qUrl
 
     // 通过请求获取链接的 html
     request({
       url: qUrl,
-      method: 'GET'
+      headers: {}
     }, (error, response, body) => {
       if (error) {
         res.status(404).send('Url Error')
@@ -119,8 +130,8 @@ app.all('/getUrlHtml', function (req, res, next) {
       res.type('text/json')
       const json = {
         code: 1,
-        title: getTitle(body),
-        html: getBody(body)
+        title: html2md.getTitle(body),
+        html: html2md.getBody(body)
       }
       res.status(200).send(json)
     })
