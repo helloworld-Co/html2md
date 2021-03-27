@@ -28,10 +28,10 @@ const html2md = {
     const qOrigin = new URL(this.qUrl).origin || ''
     return new URL(p, qOrigin).href
   },
-  changeRelativeUrl (dom) {
+  changeRelativeUrl () {
     // 转换图片、链接的相对路径
-    if (!dom) { return '<div>内容出错~</div>' }
-    const copyDom = dom
+    if (!this.dom) { return '<div>内容出错~</div>' }
+    const copyDom = this.dom
     const imgs = copyDom.querySelectorAll('img')
     const links = copyDom.querySelectorAll('a')
     imgs.length > 0 && imgs.forEach((v) => {
@@ -54,9 +54,16 @@ const html2md = {
   },
   addOriginText () {
     // 底部添加转载来源声明
-    const html = this.dom.innerHTML
-    const resHtml = html + `<br/><div>本文转自 <a href="${this.qUrl}" target="_blank">${this.qUrl}</a>，如有侵权，请联系删除。</div>`
-    return resHtml
+    const originDom = new JSDOM('').window.document.createElement('div')
+    originDom.innerHTML = `<br/><div>本文转自 <a href="${this.qUrl}" target="_blank">${this.qUrl}</a>，如有侵权，请联系删除。</div>`
+    this.dom.appendChild(originDom)
+    return this
+  },
+  getInnerHtml () {
+    return this.dom.innerHTML
+  },
+  returnFinalHtml () {
+    return this.changeRelativeUrl().addOriginText().getInnerHtml()
   },
   getDom (html, selector) {
     // 获取准确的文章内容
@@ -81,32 +88,40 @@ const html2md = {
       const extraDomArr = htmlContent.querySelectorAll('.copy-code-btn')
       extraDom && extraDom.remove()
       extraDomArr.length > 0 && extraDomArr.forEach((v) => { v.remove() })
-      return this.changeRelativeUrl(htmlContent).addOriginText()
+      html2md.dom = htmlContent
+      return this.returnFinalHtml()
     }
     // oschina
     if (this.qUrl.includes('oschina.net')) {
       const htmlContent = getBySelector('.article-detail')
       const extraDom = htmlContent.querySelector('.ad-wrap')
       extraDom && extraDom.remove()
-      return this.changeRelativeUrl(htmlContent).addOriginText()
+      html2md.dom = htmlContent
+      return this.returnFinalHtml()
     }
     // cnblogs
     if (this.qUrl.includes('cnblogs.com')) {
-      const htmlContent = getBySelector('#cnblogs_post_body')
-      return this.changeRelativeUrl(htmlContent).addOriginText()
+      html2md.dom = getBySelector('#cnblogs_post_body')
+      return this.returnFinalHtml()
     }
     // weixin
     if (this.qUrl.includes('weixin.qq.com')) {
-      const htmlContent = getBySelector('#js_content')
-      return this.changeRelativeUrl(htmlContent).addOriginText()
+      html2md.dom = getBySelector('#js_content')
+      return this.returnFinalHtml()
     }
 
     // 优先适配 article 标签，没有再用 body 标签
     const htmlArticle = getBySelector('article')
-    if (htmlArticle) { return this.changeRelativeUrl(htmlArticle).addOriginText() }
+    if (htmlArticle) {
+      html2md.dom = htmlArticle
+      return this.returnFinalHtml()
+    }
 
     const htmlBody = getBySelector('body')
-    if (htmlBody) { return this.changeRelativeUrl(htmlBody).addOriginText() }
+    if (htmlBody) {
+      html2md.dom = htmlBody
+      return this.returnFinalHtml()
+    }
 
     return content
   }
@@ -114,33 +129,33 @@ const html2md = {
 
 // 通过文章地址获取文章 html内容
 app.all('/getUrlHtml', function (req, res, next) {
-  try {
-    const qUrl = req.query.url || ''
-    html2md.qUrl = qUrl
+  const qUrl = req.query.url || ''
+  html2md.qUrl = qUrl
 
-    // 通过请求获取链接的 html
-    request({
-      url: qUrl,
-      headers: {}
-    }, (error, response, body) => {
-      if (error) {
-        res.status(404).send('Url Error')
-        return
-      }
-      res.type('text/json')
+  // 通过请求获取链接的 html
+  request({
+    url: qUrl,
+    headers: {}
+  }, (error, response, body) => {
+    if (error) {
+      res.status(404).send('Url Error')
+      return
+    }
+    res.type('text/json')
+    try {
       const json = {
         code: 1,
         title: html2md.getTitle(body),
         html: html2md.getBody(body)
       }
       res.status(200).send(json)
-    })
-  } catch (error) {
-    res.status(200).send({
-      code: 0,
-      msg: '程序异常了~'
-    })
-  }
+    } catch (error) {
+      res.status(200).send({
+        code: 0,
+        msg: '程序异常了~'
+      })
+    }
+  })
 })
 
 // 全局错误抛出
