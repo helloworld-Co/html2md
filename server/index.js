@@ -23,6 +23,21 @@ app.use(express.static(path.join(__dirname, 'static')))
 const html2md = {
   dom: '',
   qUrl: '',
+  lazyAttrs: ['data-src', 'data-original-src', 'data-original', 'src'],
+  dealLazyImg (img) {
+    /**
+     * 处理懒加载路径
+     * 简书：data-original-src
+     * 掘金：data-src
+     * segmentfault：data-src
+     * 知乎专栏：data-original
+     **/
+    for (let i = 0, len = this.lazyAttrs.length; i < len; i++) {
+      const src = img.getAttribute(this.lazyAttrs[i])
+      if (src) { return src }
+    }
+    return ''
+  },
   getAbsoluteUrl (p) {
     // 获取图片、链接的绝对路径
     const qOrigin = new URL(this.qUrl).origin || ''
@@ -35,13 +50,7 @@ const html2md = {
     const imgs = copyDom.querySelectorAll('img')
     const links = copyDom.querySelectorAll('a')
     imgs.length > 0 && imgs.forEach((v) => {
-      /**
-         * 处理懒加载路径
-         * 简书：data-original-src
-         * 掘金：data-src
-         * segmentfault：data-src
-         */
-      const src = v.src || v.getAttribute('data-src') || v.getAttribute('data-original-src') || ''
+      const src = this.dealLazyImg(v)
       v.src = this.getAbsoluteUrl(src)
     })
     links.length > 0 && links.forEach((v) => {
@@ -107,6 +116,14 @@ const html2md = {
     // weixin
     if (this.qUrl.includes('weixin.qq.com')) {
       html2md.dom = getBySelector('#js_content')
+      return this.returnFinalHtml()
+    }
+    // 知乎专栏
+    if (this.qUrl.includes('zhuanlan.zhihu.com')) {
+      const htmlContent = getBySelector('.RichText')
+      const extraScript = htmlContent.querySelectorAll('noscript')
+      extraScript.length > 0 && extraScript.forEach((v) => { v.remove() })
+      html2md.dom = htmlContent
       return this.returnFinalHtml()
     }
 
