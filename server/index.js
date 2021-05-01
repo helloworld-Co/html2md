@@ -1,4 +1,6 @@
 const path = require('path')
+const fs = require('fs')
+const bodyParser = require('body-parser')
 const express = require('express')
 const consola = require('consola')
 const request = require('request')
@@ -16,6 +18,9 @@ const config = require('../nuxt.config.js')
 Object.assign(config, {
   dev: isDev
 })
+
+app.use(bodyParser.json({ limit: '50mb' }))
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
 
 // 设置应用静态目录
 app.use(express.static(path.join(__dirname, 'static')))
@@ -173,6 +178,44 @@ app.all('/getUrlHtml', function (req, res, next) {
       })
     }
   })
+})
+
+// 下载路径
+const folderName = 'download'
+const downLoadPath = path.join('./static', folderName)
+// 下载 md 文件
+app.post('/getMdFile', function (req, res, next) {
+  const qMd = req.body.md || '## 空空如也'
+  const qUrl = req.body.url || 'https://www.helloworld.net'
+
+  // 写入md文件
+  function writeFile () {
+    const mdName = `${Date.now()}.md`
+    try {
+      fs.writeFileSync(`${downLoadPath}/${mdName}`, qMd)
+      res.status(200).send({
+        code: 1,
+        path: `${qUrl}/${folderName}/${mdName}`
+      })
+    } catch (error) {
+      res.status(200).send({
+        code: 0,
+        msg: '程序异常了~'
+      })
+    }
+  }
+
+  // 判断目录是否存在
+  const isExist = fs.existsSync(downLoadPath)
+  if (isExist) {
+    // 文件夹存在
+    writeFile()
+    return
+  }
+
+  // 文件夹不存在，创建一个
+  fs.mkdirSync(downLoadPath)
+  writeFile()
 })
 
 // 全局错误抛出

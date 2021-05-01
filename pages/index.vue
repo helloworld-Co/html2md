@@ -38,7 +38,7 @@
       <br/>
 
       <div class="input-box">
-        <mavon-editor ref="editor" v-model="md" />
+        <mavon-editor ref="editor" v-model="md" @save="toDownload"/>
       </div>
     </div>
   </client-only>
@@ -68,6 +68,22 @@ export default {
     }
   },
   methods: {
+    downLoadFile (url) {
+      const a = document.createElement('a')
+      a.download = `${Date.now()}.md`
+      a.href = url
+      a.click()
+    },
+    toDownload () {
+      const params = {
+        md: this.md,
+        url: window.location.origin
+      }
+      this.$axios.post(`${window.location.origin}/getMdFile`, params)
+        .then((res) => {
+          this.downLoadFile(res.path)
+        })
+    },
     html2md (str) {
       const turndownService = new TurndownService({ codeBlockStyle: 'fenced' })
       // Use the gfm plugin
