@@ -81,4 +81,4 @@ yarn dev
 - 提交 [Pull Request](https://github.com/helloworld-Co/html2md/pulls) 一起改进。
 
 ## 技术交流
-<img src="https://img-hello-world.oss-cn-beijing.aliyuncs.com/imgs/09ebc838fe73ae1d957d24f7d59f42b3.jpeg" width=240 />
+<img src="./daitu.jpg" width=240 />
