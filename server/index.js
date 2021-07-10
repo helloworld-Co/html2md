@@ -131,6 +131,24 @@ const html2md = {
       html2md.dom = htmlContent
       return this.returnFinalHtml()
     }
+    // 慕课专栏
+    if (this.qUrl.includes('www.imooc.com')) {
+      const htmlContent = getBySelector('.article-con')
+      html2md.dom = htmlContent
+      return this.returnFinalHtml()
+    }
+    // learnku
+    if (this.qUrl.includes('learnku.com')) {
+      const htmlContent = getBySelector('.markdown-body')
+      const extraScript = htmlContent.querySelectorAll('.toc-wraper')
+      extraScript.length > 0 && extraScript.forEach((v) => { v.remove() })
+      const extraToc = htmlContent.querySelectorAll('.markdown-toc')
+      extraToc.length > 0 && extraToc.forEach((v) => { v.remove() })
+      const extraLink = htmlContent.querySelectorAll('.reference-link')
+      extraLink.length > 0 && extraLink.forEach((v) => { v.remove() })
+      html2md.dom = htmlContent
+      return this.returnFinalHtml()
+    }
 
     // 优先适配 article 标签，没有再用 body 标签
     const htmlArticle = getBySelector('article')
