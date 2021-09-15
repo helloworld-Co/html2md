@@ -175,7 +175,9 @@ app.all('/getUrlHtml', function (req, res, next) {
   // 通过请求获取链接的 html
   request({
     url: qUrl,
-    headers: {}
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)'
+    }
   }, (error, response, body) => {
     if (error) {
       res.status(404).send('Url Error')
