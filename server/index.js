@@ -172,12 +172,17 @@ app.all('/getUrlHtml', function (req, res, next) {
   const qUrl = req.query.url || ''
   html2md.qUrl = qUrl
 
+  let arr = ['juejin.cn']
+  let agent = arr.filter(item => qUrl.includes(item)).length > 0
+  let headers = {}
+  if (agent) {
+    headers['User-Agent'] = 'Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)'
+  }
+
   // 通过请求获取链接的 html
   request({
     url: qUrl,
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)'
-    }
+    headers
   }, (error, response, body) => {
     if (error) {
       res.status(404).send('Url Error')
