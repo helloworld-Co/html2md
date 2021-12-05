@@ -167,17 +167,17 @@ const html2md = {
   }
 }
 
+// 需要模拟请求头的网站
+const mockSiteUa = ['juejin.cn']
 // 通过文章地址获取文章 html内容
 app.all('/getUrlHtml', function (req, res, next) {
   const qUrl = req.query.url || ''
   html2md.qUrl = qUrl
 
-  let arr = ['juejin.cn']
-  let agent = arr.filter(item => qUrl.includes(item)).length > 0
-  let headers = {}
-  if (agent) {
-    headers['User-Agent'] = 'Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)'
-  }
+  const isMock = mockSiteUa.find(item => qUrl.includes(item))
+  const headers = isMock ? {
+    'User-Agent': 'Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)'
+  } : {}
 
   // 通过请求获取链接的 html
   request({
