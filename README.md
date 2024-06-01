@@ -26,6 +26,8 @@
 - [sass](https://www.sass.hk/) 强大的 Css 预处理器之一
 ## 使用
 
+> 注意：node 版本要求： v14.18.0  
+
 ### 第一步：下载
 ```bash
 git clone git@github.com:helloworld-Co/html2md.git
